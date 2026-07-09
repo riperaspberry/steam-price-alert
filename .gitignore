@@ -1,0 +1,16 @@
+# Environment
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# Go build files
+/bin/
+/steam-price-alert
