@@ -19,6 +19,4 @@ func main() {
 	defer db.Close()
 
 	fmt.Println("db connected")
-	fmt.Println(cfg.AppName)
-	fmt.Println(cfg.CheckInterval)
 }
