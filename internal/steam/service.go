@@ -1,4 +1,4 @@
-package users
+package steam
 
 import (
 	"context"
@@ -10,18 +10,16 @@ type Service struct {
 }
 
 func NewService(repo Repository) *Service {
-	return &Service{
-		repo: repo,
-	}
+	return &Service{repo: repo}
 }
 
-func (s *Service) Register(ctx context.Context, user User) error {
-	_, err := s.repo.GetByTelegramID(ctx, user.TelegramID)
+func (s *Service) AddGame(ctx context.Context, game Game) error {
+	_, err := s.repo.GetBySteamID(ctx, game.SteamID)
 	if err == nil {
 		return nil
 	}
 	if err != sql.ErrNoRows {
 		return err
 	}
-	return s.repo.Create(ctx, user)
+	return s.repo.Create(ctx, game)
 }
