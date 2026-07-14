@@ -17,6 +17,5 @@ func main() {
 		panic(err)
 	}
 	defer db.Close()
-
 	fmt.Println("db connected")
 }
