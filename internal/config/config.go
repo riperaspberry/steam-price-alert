@@ -12,6 +12,7 @@ type Config struct {
 	TelegramToken string
 	DatabaseURL   string
 	CheckInterval int
+	ProxyURL      string
 }
 
 func Load() (Config, error) {
@@ -22,7 +23,7 @@ func Load() (Config, error) {
 
 	checkInterval, err := strconv.Atoi(os.Getenv("CHECK_INTERVAL"))
 	if err != nil {
-		panic("invalid check interval")
+		return Config{}, err
 	}
 
 	return Config{
@@ -30,5 +31,6 @@ func Load() (Config, error) {
 		TelegramToken: os.Getenv("TELEGRAM_TOKEN"),
 		DatabaseURL:   os.Getenv("DATABASE_URL"),
 		CheckInterval: checkInterval,
+		ProxyURL:      os.Getenv("PROXY_URL"),
 	}, nil
 }
