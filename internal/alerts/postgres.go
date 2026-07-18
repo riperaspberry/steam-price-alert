@@ -35,7 +35,7 @@ func (r *PostgresRepository) GetByID(ctx context.Context, id int) (Alert, error)
 }
 
 func (r *PostgresRepository) GetUserAlerts(ctx context.Context, userID int) ([]UserAlert, error) {
-	query := `SELECT alerts.id, games.id, games.name, games.steam_id, games.price, alerts.active FROM alerts JOIN games ON games.id = alerts.game_id WHERE alerts.user_id = $1`
+	query := `SELECT alerts.id, games.id, games.name, games.steam_id, games.price, alerts.active FROM alerts JOIN games ON games.id = alerts.game_id WHERE alerts.user_id = $1 AND alerts.active = true ORDER BY alerts.id DESC`
 	rows, err := r.db.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, err
