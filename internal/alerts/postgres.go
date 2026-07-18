@@ -34,26 +34,24 @@ func (r *PostgresRepository) GetByID(ctx context.Context, id int) (Alert, error)
 	return alert, nil
 }
 
-func (r *PostgresRepository) GetUserAlerts(ctx context.Context, userID int) ([]Alert, error) {
-	query := `SELECT id, user_id, game_id, type, active, created_at FROM alerts WHERE user_id = $1`
+func (r *PostgresRepository) GetUserAlerts(ctx context.Context, userID int) ([]UserAlert, error) {
+	query := `SELECT alerts.id, games.id, games.name, games.steam_id, games.price, alerts.active FROM alerts JOIN games ON games.id = alerts.game_id WHERE alerts.user_id = $1`
 	rows, err := r.db.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var alerts []Alert
+	var alerts []UserAlert
 	for rows.Next() {
-		var alert Alert
-		err := rows.Scan(&alert.ID, &alert.UserID, &alert.GameID, &alert.Type, &alert.Active, &alert.CreatedAt)
+		var alert UserAlert
+		err := rows.Scan(&alert.ID, &alert.GameID, &alert.Name, &alert.SteamID, &alert.Price, &alert.Active)
 		if err != nil {
 			return nil, err
 		}
 		alerts = append(alerts, alert)
 	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return alerts, nil
+
+	return alerts, rows.Err()
 }
 
 func (r *PostgresRepository) Deactivate(ctx context.Context, id int) error {
