@@ -16,6 +16,7 @@ func (b *Bot) registerHandlers() {
 	b.bot.RegisterHandler(tgbot.HandlerTypeMessageText, "/start", tgbot.MatchTypeExact, b.startHandler)
 	b.bot.RegisterHandler(tgbot.HandlerTypeMessageText, "/add", tgbot.MatchTypePrefix, b.addHandler)
 	b.bot.RegisterHandler(tgbot.HandlerTypeMessageText, "/list", tgbot.MatchTypeExact, b.listHandler)
+	b.bot.RegisterHandler(tgbot.HandlerTypeMessageText, "/remove", tgbot.MatchTypePrefix, b.removeHandler)
 }
 
 func (b *Bot) startHandler(ctx context.Context, bot *tgbot.Bot, update *models.Update) {
@@ -136,6 +137,7 @@ func (b *Bot) listHandler(ctx context.Context, bot *tgbot.Bot, update *models.Up
 	for i, alert := range alerts {
 		text += strconv.Itoa(i+1) + ". "
 		text += alert.Name + "\n"
+		text += "Alert ID: " + strconv.Itoa(alert.ID) + "\n"
 		text += "Steam ID: " + strconv.FormatInt(alert.SteamID, 10) + "\n"
 		text += "Цена: " + strconv.FormatFloat(alert.Price, 'f', 2, 64) + "\n\n"
 	}
@@ -143,5 +145,53 @@ func (b *Bot) listHandler(ctx context.Context, bot *tgbot.Bot, update *models.Up
 	_, _ = bot.SendMessage(ctx, &tgbot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
 		Text:   text,
+	})
+}
+
+func (b *Bot) removeHandler(ctx context.Context, bot *tgbot.Bot, update *models.Update) {
+	user, err := b.userService.GetByTelegramID(
+		ctx,
+		update.Message.From.ID,
+	)
+	if err != nil {
+		_, _ = bot.SendMessage(ctx, &tgbot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Сначала напишите /start",
+		})
+		return
+	}
+
+	text := update.Message.Text
+	parts := strings.Fields(text)
+
+	if len(parts) != 2 {
+		_, _ = bot.SendMessage(ctx, &tgbot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Использование: /remove <alert_id>",
+		})
+		return
+	}
+
+	alertID, err := strconv.Atoi(parts[1])
+	if err != nil {
+		_, _ = bot.SendMessage(ctx, &tgbot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "ID уведомления должен быть числом.",
+		})
+		return
+	}
+
+	err = b.alertService.DeactivateUserAlert(ctx, alertID, user.ID)
+	if err != nil {
+		_, _ = bot.SendMessage(ctx, &tgbot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Не удалось удалить уведомление.",
+		})
+		return
+	}
+
+	_, _ = bot.SendMessage(ctx, &tgbot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   "Отслеживание отключено.",
 	})
 }
