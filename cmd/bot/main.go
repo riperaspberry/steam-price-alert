@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/riperaspberry/steam-price-alert/internal/alerts"
 	"github.com/riperaspberry/steam-price-alert/internal/bot"
 	"github.com/riperaspberry/steam-price-alert/internal/config"
 	"github.com/riperaspberry/steam-price-alert/internal/database"
@@ -27,8 +28,10 @@ func main() {
 	userService := users.NewService(userRepo)
 	steamRepo := steam.NewPostgresRepository(db)
 	steamService := steam.NewService(steamRepo)
+	alertRepo := alerts.NewPostgresRepository(db)
+	alertService := alerts.NewService(alertRepo)
 
-	tgBot, err := bot.New(cfg.TelegramToken, cfg.ProxyURL, userService, steamService)
+	tgBot, err := bot.New(cfg.TelegramToken, cfg.ProxyURL, userService, steamService, alertService)
 	if err != nil {
 		panic(err)
 	}

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	tgbot "github.com/go-telegram/bot"
+	"github.com/riperaspberry/steam-price-alert/internal/alerts"
 	"github.com/riperaspberry/steam-price-alert/internal/steam"
 	"github.com/riperaspberry/steam-price-alert/internal/users"
 )
@@ -15,9 +16,10 @@ type Bot struct {
 	bot          *tgbot.Bot
 	userService  *users.Service
 	steamService *steam.Service
+	alertService *alerts.Service
 }
 
-func New(token string, proxyURL string, userService *users.Service, steamService *steam.Service) (*Bot, error) {
+func New(token string, proxyURL string, userService *users.Service, steamService *steam.Service, alertService *alerts.Service) (*Bot, error) {
 	proxy, err := url.Parse(proxyURL)
 	if err != nil {
 		return nil, err
@@ -41,6 +43,7 @@ func New(token string, proxyURL string, userService *users.Service, steamService
 		bot:          b,
 		userService:  userService,
 		steamService: steamService,
+		alertService: alertService,
 	}
 
 	myBot.registerHandlers()

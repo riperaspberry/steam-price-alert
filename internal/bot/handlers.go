@@ -7,6 +7,7 @@ import (
 
 	tgbot "github.com/go-telegram/bot"
 	models "github.com/go-telegram/bot/models"
+	"github.com/riperaspberry/steam-price-alert/internal/alerts"
 	"github.com/riperaspberry/steam-price-alert/internal/steam"
 	"github.com/riperaspberry/steam-price-alert/internal/users"
 )
@@ -53,16 +54,43 @@ func (b *Bot) addHandler(ctx context.Context, bot *tgbot.Bot, update *models.Upd
 		})
 		return
 	}
+	user, err := b.userService.GetByTelegramID(
+		ctx,
+		update.Message.From.ID,
+	)
+	if err != nil {
+		_, _ = bot.SendMessage(ctx, &tgbot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Пользователь не найден. Напишите /start",
+		})
+		return
+	}
 	game := steam.Game{
 		SteamID: steamID,
 		Name:    "Unknown",
 		Price:   0,
 	}
-	err = b.steamService.AddGame(ctx, game)
+	game, err = b.steamService.AddGame(ctx, game)
 	if err != nil {
 		_, _ = bot.SendMessage(ctx, &tgbot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
 			Text:   "Не удалось добавить игру.",
+		})
+		return
+	}
+
+	alert := alerts.Alert{
+		UserID: user.ID,
+		GameID: game.ID,
+		Type:   "price",
+		Active: true,
+	}
+
+	err = b.alertService.CreateAlert(ctx, alert)
+	if err != nil {
+		_, _ = bot.SendMessage(ctx, &tgbot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Не удалось создать уведомление.",
 		})
 		return
 	}

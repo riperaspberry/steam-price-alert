@@ -25,3 +25,7 @@ func (s *Service) Register(ctx context.Context, user User) error {
 	}
 	return s.repo.Create(ctx, user)
 }
+
+func (s *Service) GetByTelegramID(ctx context.Context, telegramID int64) (User, error) {
+	return s.repo.GetByTelegramID(ctx, telegramID)
+}
