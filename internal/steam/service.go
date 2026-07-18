@@ -13,13 +13,21 @@ func NewService(repo Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) AddGame(ctx context.Context, game Game) error {
-	_, err := s.repo.GetBySteamID(ctx, game.SteamID)
+func (s *Service) AddGame(ctx context.Context, game Game) (Game, error) {
+	existing, err := s.repo.GetBySteamID(ctx, game.SteamID)
+
 	if err == nil {
-		return nil
+		return existing, nil
 	}
+
 	if err != sql.ErrNoRows {
-		return err
+		return Game{}, err
 	}
-	return s.repo.Create(ctx, game)
+
+	err = s.repo.Create(ctx, game)
+	if err != nil {
+		return Game{}, err
+	}
+
+	return s.repo.GetBySteamID(ctx, game.SteamID)
 }
